@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aircursor"
+version = "1.0.0"
+description = "Privacy-first webcam hand tracking for touchless mouse control on Windows"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Farzam Fattahi" }]
+keywords = ["computer-vision", "hand-tracking", "mediapipe", "accessibility", "mouse-control"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: Microsoft :: Windows :: Windows 10",
+  "Operating System :: Microsoft :: Windows :: Windows 11",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Image Processing",
+]
+dependencies = [
+  "mediapipe==0.10.21",
+  "numpy>=1.26,<3",
+  "opencv-python>=4.10,<5",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.9"]
+
+[project.scripts]
+aircursor = "aircursor.app:main"
+
+[project.urls]
+Repository = "https://github.com/FarzamFattahi/aircursor"
+Issues = "https://github.com/FarzamFattahi/aircursor/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
