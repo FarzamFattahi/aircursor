@@ -54,8 +54,8 @@ def pinch_midpoint(hand: DetectedHand) -> tuple[float, float]:
 
 @dataclass(slots=True)
 class PinchDetector:
-    start_threshold: float = 0.34
-    release_threshold: float = 0.48
+    start_threshold: float = 0.30
+    release_threshold: float = 0.40
     confirm_frames: int = 2
     release_frames: int = 2
     state: PinchState = field(init=False, default=PinchState.OPEN)
@@ -201,7 +201,7 @@ class GestureManager:
     def __init__(
         self,
         input_controller: InputController,
-        drag_hold_ms: int = 520,
+        drag_hold_ms: int = 650,
         scrolling: bool = True,
     ) -> None:
         self.input = input_controller
@@ -210,6 +210,7 @@ class GestureManager:
         self.scroll = ScrollDetector()
         self.scrolling = scrolling
         self._previous_pinch = PinchState.OPEN
+        self._armed = True
 
     def reset(self) -> None:
         if self.drag.cancel() is DragAction.BUTTON_UP:
@@ -218,9 +219,20 @@ class GestureManager:
         self.pinch.reset()
         self.scroll.reset()
         self._previous_pinch = PinchState.OPEN
+        # Reacquiring a closed hand must not create a fresh click or drag.
+        self._armed = False
 
     def update(self, hand: DetectedHand, now: float) -> GestureResult:
+        if hasattr(self.input, "set_hand_intent"):
+            self.input.set_hand_intent(hand.wrist.x, hand.wrist.y)
         distance = normalized_pinch_distance(hand)
+        if not math.isfinite(distance):
+            self.reset()
+            return GestureResult(InteractionMode.TRACKING_LOST, distance)
+        if not self._armed:
+            if distance < self.pinch.release_threshold:
+                return GestureResult(InteractionMode.POINTER, distance)
+            self._armed = True
         state = self.pinch.update(distance)
         tap_completed = False
 
@@ -234,14 +246,15 @@ class GestureManager:
             elif action is DragAction.BUTTON_UP:
                 self.input.left_up()
 
-        action = self.drag.tick(now)
-        if action is DragAction.BUTTON_DOWN:
+        # Opening at the hold boundary is a release, not a new drag.
+        if state is PinchState.PINCHED and self.drag.tick(now) is DragAction.BUTTON_DOWN:
             self.input.left_down()
 
         self._previous_pinch = state
         if self.drag.dragging:
             return GestureResult(InteractionMode.DRAG, distance, tap_completed)
         if state in {PinchState.PINCH_CANDIDATE, PinchState.PINCHED, PinchState.RELEASE_CANDIDATE}:
+            self.scroll.reset()
             return GestureResult(InteractionMode.PINCH, distance, tap_completed)
 
         amount = self.scroll.update(hand) if self.scrolling else 0

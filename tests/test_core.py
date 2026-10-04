@@ -32,7 +32,7 @@ def test_pinch_detector_uses_confirmation_and_hysteresis() -> None:
     detector = PinchDetector(confirm_frames=2, release_frames=2)
     assert detector.update(0.2) is PinchState.PINCH_CANDIDATE
     assert detector.update(0.2) is PinchState.PINCHED
-    assert detector.update(0.4) is PinchState.PINCHED
+    assert detector.update(0.35) is PinchState.PINCHED
     assert detector.update(0.6) is PinchState.RELEASE_CANDIDATE
     assert detector.update(0.6) is PinchState.OPEN
 

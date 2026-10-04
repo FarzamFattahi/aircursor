@@ -9,7 +9,7 @@ class AirCursorConfig:
     camera_width: int = 640
     camera_height: int = 480
     preferred_hand: str = "Auto"
-    drag_hold_ms: int = 520
+    drag_hold_ms: int = 650
     scroll_enabled: bool = True
     mirror_preview: bool = True
     margin_x: float = 0.14

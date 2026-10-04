@@ -1,4 +1,4 @@
-![AirCursor — Your hand. Your cursor. Move, click, drag and scroll with webcam hand tracking.](assets/banner.png)
+![AirCursor â€” Your hand. Your cursor. Move, click, drag and scroll with webcam hand tracking.](assets/banner.png)
 
 # AirCursor
 
@@ -14,7 +14,7 @@ This repository contains the reusable, auditable core of the AirCursor desktop p
 - Stable left-, right-, or automatic-hand selection
 - Pointer movement from the thumb/index midpoint
 - Pinch and release to click
-- Hold a pinch to drag
+- Hold a pinch for 650 ms, then move to drag
 - Two-finger vertical movement to scroll
 - One Euro adaptive filtering for smooth but responsive motion
 - Reduced camera control area mapped across the full display
@@ -23,6 +23,14 @@ This repository contains the reusable, auditable core of the AirCursor desktop p
 - Framework-neutral core components with automated tests
 
 ## Quick start
+
+### Clicks that behave predictably
+
+A quick pinch-and-release emits a complete click immediately on release. It does not hold the mouse button down or wait for a possible second tap. Two quick taps use Windows' double-click interval and the same target when the wrist stays still; moving the wrist deliberately selects a new target. A drag starts only after a continuous 650 ms hold, and opening the pinch or losing tracking releases the mouse button. Pointer movement resumes after a click without a half-second freeze.
+
+The updated portable Qt interface opens maximized on first use, remembers its window geometry, and provides a larger camera preview and visible gesture instructions. Preview size does not limit the control area: the hand midpoint maps to the full primary display.
+
+The original portable app can be updated with [the reproducible Python 3.12 update tool](packaging/README.md). The GitHub source package also provides the lightweight OpenCV demo below. The original packaged Qt interface is preserved through compatibility adapters; its complete original source was not present in the supplied folder.
 
 AirCursor supports Windows 10/11 with Python 3.11 or 3.12 and a webcam.
 
@@ -43,7 +51,7 @@ Keep your hand inside the green rectangle. Move using the midpoint between your 
 |---|---|
 | Move pointer | Move thumb/index midpoint |
 | Click | Pinch, then release |
-| Drag | Hold pinch for 520 ms |
+| Drag | Hold pinch for 650 ms |
 | Scroll | Extend index and middle fingers; move vertically |
 | Stop safely | `Ctrl+Alt+Esc` |
 | Close preview | `Q` |
@@ -52,11 +60,11 @@ Keep your hand inside the green rectangle. Move using the midpoint between your 
 
 | Main window | General settings |
 |---|---|
-| ![AirCursor main window](assets/main-window.jpg) | ![AirCursor general settings](assets/settings.jpg) |
+| ![AirCursor main window](assets/main-window.png) | ![AirCursor general settings](assets/settings.jpg) |
 
-![AirCursor gesture settings](assets/gestures.jpg)
+![AirCursor gesture settings](assets/gestures.png)
 
-The screenshots show the original packaged Windows interface. The repository focuses on the reusable computer-vision and interaction engine and includes a lightweight OpenCV demo rather than the proprietary build bundle.
+The main-window screenshot shows the updated packaged Windows interface; the gesture settings also reflect the updated drag timing; the unchanged general settings view is from the original application. The repository focuses on the reusable computer-vision and interaction engine and includes a lightweight OpenCV demo rather than the proprietary build bundle.
 
 ## Architecture
 
@@ -108,7 +116,7 @@ pytest
 ruff check .
 ```
 
-Automated tests cover deterministic gesture, mapping, filtering, and safety behavior. Physical-webcam testing is still required for lighting, camera placement, and real desktop interaction.
+Automated tests cover deterministic gesture, mapping, filtering, two-tap completion, drag classification, target retention, and safety behavior. A local frozen-runtime probe and a real Windows input fixture also exercise the packaged app; the native fixture checks actual press, release, double-click, and drag delivery at 125% display scaling. Physical-webcam testing is still required for lighting, camera placement, and real desktop interaction.
 
 ## Privacy and safety
 

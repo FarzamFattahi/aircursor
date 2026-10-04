@@ -123,17 +123,21 @@ class PointerGain:
 
 @dataclass(slots=True)
 class TapStabilizer:
-    double_tap_window: float = 0.38
+    double_tap_window: float = 0.5
     anchor: tuple[float, float] | None = field(init=False, default=None)
     lock_until: float = field(init=False, default=0.0)
+    previous: tuple[float, float] | None = field(init=False, default=None)
+    retarget_distance: float = 32.0
 
     def __post_init__(self) -> None:
         self.anchor: tuple[float, float] | None = None
         self.lock_until = 0.0
+        self.previous = None
 
     def reset(self) -> None:
         self.anchor = None
         self.lock_until = 0.0
+        self.previous = None
 
     def stabilize(
         self,
@@ -144,13 +148,22 @@ class TapStabilizer:
     ) -> tuple[float, float]:
         if mode is InteractionMode.DRAG:
             self.reset()
+            self.previous = point
             return point
+        # A second pinch after the window expires needs its own target.
+        if (mode is InteractionMode.PINCH and self.lock_until
+                and (now >= self.lock_until or (self.anchor is not None
+                     and math.dist(self.previous or point, self.anchor) > self.retarget_distance))):
+            self.anchor = None
+            self.lock_until = 0.0
         if mode is InteractionMode.PINCH and self.anchor is None:
-            self.anchor = point
+            self.anchor = self.previous if self.previous is not None else point
         if tap_completed:
             self.lock_until = now + self.double_tap_window
-        if self.anchor is not None and (mode is InteractionMode.PINCH or now < self.lock_until):
+        if self.anchor is not None and (mode is InteractionMode.PINCH or tap_completed):
+            self.previous = self.anchor
             return self.anchor
         if now >= self.lock_until:
             self.anchor = None
+        self.previous = point
         return point

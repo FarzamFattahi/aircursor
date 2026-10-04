@@ -8,6 +8,7 @@ from .config import AirCursorConfig
 from .gestures import GestureManager, InteractionMode, pinch_midpoint
 from .hand_selector import HandSelector
 from .input import WindowsInputController
+from .interaction import FrameInputController
 from .pointer import CoordinateMapper, OneEuroFilter, PointerGain, TapStabilizer
 from .vision import MediaPipeHandDetector
 
@@ -23,12 +24,13 @@ def run(config: AirCursorConfig) -> None:
     import cv2
 
     config.validate()
-    input_controller = WindowsInputController()
+    native_input = WindowsInputController()
+    input_controller = FrameInputController(native_input)
     width, height = input_controller.screen_size()
     mapper = CoordinateMapper(width, height, config.margin_x, config.margin_y)
     smoother = OneEuroFilter(config.min_cutoff, config.beta, config.derivative_cutoff)
     gain = PointerGain(config.pointer_gain)
-    stabilizer = TapStabilizer()
+    stabilizer = TapStabilizer(native_input.double_click_time())
     selector = HandSelector(config.preferred_hand)
     gestures = GestureManager(input_controller, config.drag_hold_ms, config.scroll_enabled)
     detector = MediaPipeHandDetector()
@@ -111,7 +113,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Control the Windows pointer with one hand")
     parser.add_argument("--camera", type=int, default=0, help="OpenCV camera index")
     parser.add_argument("--hand", choices=("Auto", "Left", "Right"), default="Auto")
-    parser.add_argument("--drag-hold-ms", type=int, default=520)
+    parser.add_argument("--drag-hold-ms", type=int, default=650)
     parser.add_argument("--no-scroll", action="store_true")
     return parser
 
