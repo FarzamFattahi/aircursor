@@ -1,8 +1,8 @@
+![AirCursor — Your hand. Your cursor. Move, click, drag and scroll with webcam hand tracking.](assets/banner.png)
+
 # AirCursor
 
 AirCursor turns a webcam and one hand into a touchless mouse for Windows. It uses MediaPipe landmarks locally to move the pointer, click, drag, and scroll without recording or uploading video.
-
-![AirCursor detecting a pinch gesture](assets/gesture-control.jpg)
 
 ## Why this repository exists
 
